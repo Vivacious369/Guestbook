@@ -66,7 +66,7 @@ if __name__ == '__main__':
             print("error: {} environment variable not set".format(v))
             exit(1)
 
-    # Start Prometheus metrics server on port 8001
+    # Start Prometheus metrics server on port 8000 and 9216
     start_http_server(8000)
     
     # Start Flask server for backend API
