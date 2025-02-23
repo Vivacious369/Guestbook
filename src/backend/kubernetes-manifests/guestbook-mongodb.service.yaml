@@ -5,18 +5,33 @@ metadata:
   labels:
     app: python-guestbook
     tier: db
+spec:
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: python-guestbook
+    tier: db
+
+---
+# Separate Service for MongoDB Metrics (Exporter)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-metrics
+  labels:
+    app: python-guestbook
+    tier: db
     monitoring: "enabled"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9216"
 spec:
   ports:
-    - name: mongodb
-      port: 27017
-      targetPort: 27017
-    # - name: metrics
-    #   port: 9216
-    #   targetPort: 9216
+    - name: metrics
+      port: 9216
+      targetPort: 9216
   selector:
     app: python-guestbook
     tier: db
