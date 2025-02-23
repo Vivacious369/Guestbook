@@ -1,6 +1,3 @@
-"""
-A sample frontend server. Hosts a web page to display messages
-"""
 import json
 import os
 import datetime
@@ -8,8 +5,13 @@ import time
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 import requests
 import dateutil.relativedelta
+from prometheus_client import start_http_server, Counter, generate_latest  # Import Prometheus client
 
 app = Flask(__name__)
+
+# Prometheus metrics
+REQUESTS = Counter('http_requests_total', 'Total HTTP requests', ['method'])
+
 app.config["BACKEND_URI"] = 'http://{}/messages'.format(os.environ.get('GUESTBOOK_API_ADDR'))
 
 @app.route('/')
@@ -17,6 +19,7 @@ def main():
     """ Retrieve a list of messages from the backend, and use them to render the HTML template """
     response = requests.get(app.config["BACKEND_URI"], timeout=3)
     json_response = json.loads(response.text)
+    REQUESTS.labels(method='GET').inc()  # Increment counter for GET requests
     return render_template('home.html', messages=json_response)
 
 @app.route('/post', methods=['POST'])
@@ -29,6 +32,11 @@ def post():
                   headers={'content-type': 'application/json'},
                   timeout=3)
     return redirect(url_for('main'))
+
+@app.route('/metrics')
+def metrics():
+    """Expose metrics to Prometheus"""
+    return generate_latest(REQUESTS)  # Returns the metrics in the correct format
 
 def format_duration(timestamp):
     """ Format the time since the input timestamp in a human readable way """
@@ -51,9 +59,11 @@ if __name__ == '__main__':
             print("error: {} environment variable not set".format(v))
             exit(1)
 
-    # register format_duration for use in html template
+    # Register format_duration for use in HTML template
     app.jinja_env.globals.update(format_duration=format_duration)
 
-    # start Flask server
-    # Flask's debug mode is unrelated to ptvsd debugger used by Cloud Code
+    # Start Prometheus metrics server
+    start_http_server(8000)  # Prometheus will scrape metrics from this port
+
+    # Start Flask app
     app.run(debug=False, port=os.environ.get('PORT'), host='0.0.0.0')
