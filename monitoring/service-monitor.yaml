@@ -7,22 +7,22 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: python-guestbook
+      monitoring: "enabled"
   endpoints:
     # Frontend metrics (Flask app exposing metrics on port 8000)
     - port: metrics
       interval: 30s
       path: /metrics
-      targetPort: 8000    # Frontend port for metrics
-    # Backend metrics (Updated to use 8001 for backend metrics)
-    - port: http
+      targetPort: 8000
+    # Backend metrics (Updated to use correct backend metrics port)
+    - port: metrics
       interval: 30s
       path: /metrics
-      targetPort: 8000    # Corrected backend port for metrics
+      targetPort: 8000
     # MongoDB metrics (MongoDB exporter exposes metrics on port 9216)
     - port: metrics
       interval: 30s
       path: /metrics
-      targetPort: 9216    # MongoDB exporter port for metrics
+      targetPort: 9216
   namespaceSelector:
     any: true
