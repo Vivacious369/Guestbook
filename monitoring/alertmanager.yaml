@@ -1,0 +1,42 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "pagerduty"  # Set PagerDuty as the default receiver
+  group_by:
+    - namespace
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+
+receivers:
+  - name: "pagerduty"
+    pagerduty_configs:
+      - service_key: "2439d0f35b834908c19743e7449959a5"  # Replace with your actual PagerDuty API key
+        severity: "critical"
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname", "namespace", "instance"]
+
+  - source_match:
+      severity: "warning"
+    target_match:
+      severity: "info"
+    equal: ["alertname", "namespace"]
+
+  - source_match:
+      alertname: "InfoInhibitor"
+    target_match:
+      severity: "info"
+    equal: ["namespace"]
+
+  - target_match:
+      alertname: "InfoInhibitor"
+
+templates:
+  - /etc/alertmanager/config/*.tmpl
