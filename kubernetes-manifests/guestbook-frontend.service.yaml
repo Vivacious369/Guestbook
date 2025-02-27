@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-guestbook-frontend
+  labels:
+    app: python-guestbook
+    tier: frontend
+    monitoring: "enabled"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+spec:
+  type: ClusterIP
+  selector:
+    app: python-guestbook
+    tier: frontend
+  ports:
+    - name: http
+      port: 80  # Assuming your frontend serves on port 80
+      targetPort: 80
+    - name: metrics
+      port: 8000  # Prometheus metrics exposed on port 8000
+      targetPort: 8000
