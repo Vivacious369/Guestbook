@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on any error
-set -e
+# set -e
 
 # Set variables
 REGISTRY="localhost:5000"
@@ -41,7 +41,7 @@ kubectl apply -f kubernetes-manifests/guestbook-mongodb.service.yaml
 kubectl get svc
 
 # Expose the Frontend Service (e.g., via port-forwarding) to access the application
-kubectl port-forward svc/frontend 8080:80
+kubectl port-forward svc/python-guestbook-frontend 8080:80
 
 # Application is available at http://localhost:80
 
