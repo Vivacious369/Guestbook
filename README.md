@@ -27,9 +27,6 @@ Before proceeding, ensure you have the following installed:
 │   ├── alertmanager.yaml  # For manual installation, it acts as template for integrating PagerDuty
 │   ├── service-monitor.yaml # For manual installation, it acts as template for service monitoring
 ├── scripts/               # Automation scripts for setup and deployment
-│   ├── start-local.sh     # Starts the local Kubernetes cluster and registry
-│   ├── deploy.sh          # Builds and deploys the services
-│   ├── cleanup.sh         # Stops and cleans up the cluster
 ├── README.md              # Setup and usage instructions
 ```
 
@@ -222,8 +219,8 @@ helm install monitoring ./helm --values ./helm/monitoring-values.yaml
 
 This will install the Guestbook application along with Prometheus, Grafana, and alerting configured as per the provided `values.yaml` files.
 
-### 2. Use the Full `deploy.sh` Script
-Alternatively, you can automate the entire setup by using the `deploy.sh` script. This script will do the following for you:
+### 2. Use the Full `fullyautomated.sh` Script
+Alternatively, you can automate the entire setup by using the `fullyautomated.sh` script. This script will do the following for you:
 
 - Build and push the necessary Docker images.
 - Deploy the Guestbook application.
@@ -234,7 +231,7 @@ Simply run the following command from the `scripts/` directory:
 
 ```bash
 chmod +x scripts/deploy.sh
-./scripts/deploy.sh
+./scripts/fullyautomated.sh
 ```
 
 Sit back, relax, and let the script take care of the deployment, monitoring setup, and alert configuration.
@@ -251,9 +248,10 @@ kubectl get pods -A
 kubectl get svc -A
 ```
 
-### Get Logs
+### Get Logs or details
 ```bash
 kubectl logs -f <pod-name>
+kubectl describe pod/<pod-name>
 ```
 
 ### Delete All Resources
