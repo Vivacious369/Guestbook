@@ -148,7 +148,7 @@ Default credentials: `admin / prom-operator`
 - Once you're satisfied with the panel, click **Apply** to add it to the dashboard.
 
 You can continue adding more panels and customize the dashboard further based on the metrics you wish to monitor.
-```
+
 ## Step 4: Set Up Alerting
 ### Configure Alertmanager with PagerDuty (or another service)
 Edit the `alertmanager-config.yaml` file and replace `<PAGERDUTY_KEY>` with your API key.
