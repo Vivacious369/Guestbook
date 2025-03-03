@@ -96,16 +96,59 @@ The `kube-prometheus-stack` Helm chart installs the following components for obs
 kubectl get pods -n monitoring
 kubectl get svc -n monitoring
 ```
+### Access Prometheus UI to check targets
 
+```bash
+kubectl port-forward -n monitoring pod/prometheus-kube-prometheus-stack-prometheus-0 9090:9090 &
+```
+Access prometheus at: [http://localhost:9090](http://localhost:9090)
+Go to targets and see if all services are scrapped and shows UP status 
 ### Access Grafana Dashboard
 ```bash
-kubectl port-forward svc/prometheus-grafana -n monitoring 3000:80
+kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring  -n monitoring 3000:80
 ```
 
 Access Grafana at: [http://localhost:3000](http://localhost:3000)
 
 Default credentials: `admin / prom-operator`
 
+### Next Steps in Grafana
+
+#### 1. **Login to Grafana**
+- Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
+- Use the default credentials:
+  - Username: `admin`
+  - Password: `prom-operator`
+- You will be prompted to change the password upon first login.
+
+#### 2. **Add Prometheus Data Source**
+- Once logged in, click on the **gear icon** (⚙️) in the left sidebar to go to **Configuration**.
+- Select **Data Sources** from the menu.
+- Click on **Add data source**.
+- Choose **Prometheus** from the list of available data sources.
+- In the **HTTP** section, set the **URL** to the following Prometheus API endpoint:
+
+  ```
+  http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+  ```
+
+- Click on **Save & Test** to verify the connection. If the connection is successful, you will see a green message indicating "Data source is working."
+
+#### 3. **Create a Dashboard**
+- After the data source is configured, go to the left sidebar and click on the **"+"** icon and select **Dashboard**.
+- Click on **Add new panel**.
+- In the **Query** section, select **Prometheus** as the data source.
+- You can now start building your dashboard by writing Prometheus queries to fetch metrics. For example, you can display the CPU usage of your nodes with the query:
+
+  ```prometheus
+  node_cpu_seconds_total{mode="idle"}
+  ```
+
+- Customize the visualization, title, and other settings as needed.
+- Once you're satisfied with the panel, click **Apply** to add it to the dashboard.
+
+You can continue adding more panels and customize the dashboard further based on the metrics you wish to monitor.
+```
 ## Step 4: Set Up Alerting
 ### Configure Alertmanager with PagerDuty (or another service)
 Edit the `alertmanager-config.yaml` file and replace `<PAGERDUTY_KEY>` with your API key.
@@ -147,6 +190,12 @@ curl -X POST "http://localhost:9093/api/v2/alerts" -H "Content-Type: application
 ```
 
 If you receive alerts on PagerDuty, the integration is successful.
+For Accessing Alertmanager run the below command 
+
+```bash
+kubectl port-forward -n monitoring pod/alertmanager-kube-prometheus-stack-alertmanager-0 9093:9093
+```
+All alerts can be viewed and also silences can be created.
 
 ## Step 5: Clean Up (Optional)
 To delete the cluster and remove all resources:
