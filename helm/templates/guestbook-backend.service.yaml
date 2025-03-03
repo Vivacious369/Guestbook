@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    app: {{ .Values.appName }}
+    tier: backend
+    monitoring: "enabled"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.backend.metricsPort }}"
+spec:
+  type: {{ .Values.backend.serviceType }}
+  selector:
+    app: {{ .Values.appName }}
+    tier: backend
+  ports:
+    - name: http-server
+      port: {{ .Values.backend.servicePort }}
+      targetPort: {{ .Values.backend.targetPort }}
+    - name: metrics
+      port: {{ .Values.backend.metricsPort }}
+      targetPort: {{ .Values.backend.metricsPort }}

@@ -6,32 +6,32 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: python-guestbook-mongodb
+  name: {{ .Values.mongo.name }}
   labels:
-    app: python-guestbook
+    app: {{ .Values.appName }}
     tier: db
 spec:
-  replicas: 1
+  replicas: {{ .Values.mongo.replicas }}
   selector:
     matchLabels:
-      app: python-guestbook
+      app: {{ .Values.appName }}
       tier: db
   template:
     metadata:
       labels:
-        app: python-guestbook
+        app: {{ .Values.appName }}
         tier: db
     spec:
       containers:
         - name: mongo
-          image: localhost:5000/the-mongo-image:latest
+          image: "{{ .Values.mongo.image }}"
           ports:
           - name: http-server
-            containerPort: 8080
+            containerPort: {{ .Values.mongo.port }}
           env:
           - name: PORT
-            value: "8080"
+            value: "{{ .Values.mongo.port }}"
           - name: GUESTBOOK_DB_ADDR
-            value: "python-guestbook-mongodb:27017"
+            value: "{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
           - name: MONGO_DB_URI
-            value: "mongodb://root:example@python-guestbook-mongodb:27017"
+            value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
