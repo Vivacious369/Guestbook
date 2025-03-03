@@ -3,10 +3,14 @@
 # Exit on any error
 set -e
 
-# Step 1: Install Prometheus using Helm in the 'monitoring' namespace
-echo "Installing Prometheus using Helm..."
-
-helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+# Check if Prometheus is already installed
+if helm list -n monitoring | grep -q "kube-prometheus-stack"; then
+  echo "Prometheus is already installed. Skipping installation."
+  exit 0
+else
+  echo "Installing Prometheus using Helm..."
+  helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+fi
 
 # Step 2: Check if Prometheus, Grafana, and related services are deployed
 echo "Checking deployed pods and services in 'monitoring' namespace..."
@@ -49,6 +53,11 @@ echo "Restarting Alertmanager StatefulSet..."
 kubectl rollout restart statefulset alertmanager-kube-prometheus-stack-alertmanager -n monitoring
 
 echo "PagerDuty alerting is now configured with Alertmanager!"
+
+# Forwarding Alertmanager UI
+kubectl port-forward -n monitoring pod/alertmanager-kube-prometheus-stack-alertmanager-0 9093:9093 &
+echo " Alertmanager can be accessed at http://localhost:9093"
+
 
 # Final Output
 echo "Setup complete! Prometheus and Grafana are now running."

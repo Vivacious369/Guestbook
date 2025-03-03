@@ -1,7 +1,7 @@
 # Guestbook Infrastructure Setup
 
 ## Overview
-This repository contains the infrastructure setup for deploying the Guestbook application in a local Kubernetes cluster using `kind`. It also includes a monitoring and logging stack to observe the system and an alerting mechanism to notify on critical events.
+This repository provides the infrastructure setup for deploying the Guestbook application in a local Kubernetes cluster using `kind`. It also includes a comprehensive observability stack powered by **Prometheus** for monitoring and **Grafana** for visualizing metrics, seamlessly integrated with **PagerDuty** to deliver real-time alerts for critical events, ensuring proactive response and system reliability.
 
 ## Prerequisites
 Before proceeding, ensure you have the following installed:
@@ -14,9 +14,16 @@ Before proceeding, ensure you have the following installed:
 
 ## Repository Structure
 ```
-.
-├── k8s/                 # Kubernetes manifests for application deployment
-├── monitoring/          # Monitoring stack (Prometheus, Grafana, Loki, Promtail, Alertmanager)
+├── helm/                  # Automation of deployment and monitoring setup via helm
+│   ├──charts/             # Directory for chart dependencies (if any)  
+│   ├──templates/          # Kubernetes manifests (YAML files with Helm templates)  
+│   ├──values.yaml         # Default configuration values  for deployment
+│   ├──Chart.yaml          # Metadata about the Helm chart  
+│   ├──monitoring-values.yaml # Default configuration values  for monitoring
+├── kubernetes-manifests/ # Kubernetes manifests for application deployment
+├── monitoring/
+│   ├── alertmanager.yaml # For manual installation, it acts as template for integrating pagerduty
+│   ├── service-monitor.yaml # For manual installation, it acts as template for service monitor
 ├── scripts/             # Automation scripts for setup and deployment
 │   ├── start-local.sh   # Starts the local Kubernetes cluster and registry
 │   ├── deploy.sh        # Builds and deploys the services
@@ -45,14 +52,11 @@ kubectl get nodes
 ## Step 2: Deploy Monitoring and Logging Stack
 
 ### Deploy using Helm
-Run the following commands to install Prometheus, Grafana, Loki, and Promtail:
+Run the following commands to install Prometheus from kube-prometheus-stack:
 ```sh
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add grafana https://grafana.github.io/helm-charts
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
 helm repo update
 
-helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-helm install loki grafana/loki-stack --namespace monitoring
 ```
 
 ### Verify the Deployment
@@ -72,16 +76,11 @@ Default credentials: `admin` / `prom-operator`
 
 ## Step 3: Deploy Guestbook Application
 
-### Build and Push Docker Images
+### Build and Push Docker Images and apply Kubernetest manifests
 Run the following script to build and push the frontend and backend images to the local registry:
 ```sh
 chmod +x scripts/deploy.sh
 ./scripts/deploy.sh
-```
-
-### Apply Kubernetes Manifests
-```sh
-kubectl apply -f k8s/
 ```
 
 ### Verify the Deployment
@@ -118,7 +117,21 @@ kubectl apply -f monitoring/alertmanager-config.yaml
 
 ### Test Alerts
 ```sh
-kubectl apply -f monitoring/test-alert.yaml
+curl -X POST "https://events.pagerduty.com/v2/enqueue" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "payload": {
+          "summary": "PagerDuty Test Alert",
+          "source": "Alertmanager",
+          "severity": "critical",
+          "component": "test-component",
+          "group": "test-group",
+          "class": "test-class"
+        },
+        "routing_key": "2439d0f35b834908c19743e7449959a5Y",
+        "event_action": "trigger"
+      }'
+
 ```
 
 ---
