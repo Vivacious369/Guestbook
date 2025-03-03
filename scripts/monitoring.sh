@@ -22,10 +22,10 @@ kubectl get svc -n monitoring
 echo "Setting up port-forwarding for Prometheus and Grafana..."
 
 # Forwarding Prometheus UI
-kubectl port-forward -n monitoring svc/prometheus-operated 9090:9090 &
+kubectl port-forward -n monitoring pod/prometheus-kube-prometheus-stack-prometheus-0 9090:9090 &
 
 # Forwarding Grafana UI
-kubectl port-forward -n monitoring svc/grafana 3000:80 &
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:3000 &
 
 echo "Prometheus UI is available at http://localhost:9090"
 echo "Grafana UI is available at http://localhost:3000"
