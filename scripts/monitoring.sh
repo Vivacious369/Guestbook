@@ -36,7 +36,7 @@ echo "Please log in to Grafana at http://localhost:3000"
 echo "Use the following steps to configure Prometheus as a DataSource in Grafana:"
 echo "1. Go to Configuration > Data Sources."
 echo "2. Click 'Add data source' and choose 'Prometheus'."
-echo "3. In the URL field, enter 'http://prometheus-operated:9090'."
+echo "3. In the URL field, enter 'http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090'."
 echo "4. Click 'Save & Test'."
 
 # Step 5: Set up Alertmanager with PagerDuty
