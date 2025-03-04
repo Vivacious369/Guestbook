@@ -162,7 +162,10 @@ receivers:
 Apply the configuration:
 
 ```bash
-kubectl apply -f monitoring/alertmanager-config.yaml
+kubectl create secret generic alertmanager-kube-prometheus-stack-alertmanager -n monitoring \
+  --from-file=alertmanager.yaml=monitoring/alertmanager.yaml \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 ```
 
 ### Test Alerts
@@ -215,7 +218,11 @@ You can deploy the Guestbook application and set up monitoring using Helm charts
 ```bash
 helm install guestbook ./helm --values ./helm/values.yaml
 ```
-
+For giving the pagerduty key -
+```bash
+helm upgrade --install guestbook ./helm \
+  --set pagerduty.serviceKey=$(echo -n "servicekey" | base64)
+```
 This will install the Guestbook application along with Prometheus, Grafana, and alerting configured as per the provided `values.yaml` files.
 
 ### 2. Use the Full `fullyautomated.sh` Script
