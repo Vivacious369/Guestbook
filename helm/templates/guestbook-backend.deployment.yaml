@@ -5,16 +5,8 @@ metadata:
   labels:
     app: {{ .Values.appName }}
     tier: backend
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: guestbook
-  annotations:
-    meta.helm.sh/release-name: guestbook
-    meta.helm.sh/release-namespace: default
-  # labels:
-  #   app: {{ .Values.appName }}
-  #   tier: backend
 spec:
-  replicas: {{ .Values.backend.replicas }}
+  replicas: {{ .Values.backend.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Values.appName }}
@@ -30,22 +22,23 @@ spec:
           image: mongo:4
           command: ['/bin/sh', '-c']
           args:
-            - echo "Waiting for mongodb at {{ .Values.mongo.name }}:{{ .Values.mongo.port }} to go live before the BE..."
             - |
-              until (mongo --host {{ .Values.mongo.name }}:{{ .Values.mongo.port }} >/dev/null); do 
-                echo "Waiting for connection for 2 sec."; 
-                sleep 2; 
+              echo "Waiting for mongodb at {{ .Values.mongo.name }}:{{ .Values.mongo.port }} to go live before the BE..."
+            - |
+              until mongo --host {{ .Values.mongo.name }}:{{ .Values.mongo.port }} >/dev/null; do
+                echo "Waiting for connection for 2 sec."
+                sleep 2
               done
       containers:
-      - name: backend
-        image: "{{ .Values.backend.image }}"
-        ports:
-        - name: http-server
-          containerPort: {{ .Values.backend.port }}
-        env:
-        - name: PORT
-          value: "{{ .Values.backend.port }}"
-        - name: GUESTBOOK_DB_ADDR
-          value: "{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
-        - name: MONGO_DB_URI
-          value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          ports:
+            - name: http-server
+              containerPort: {{ .Values.backend.service.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.backend.service.port }}"
+            - name: GUESTBOOK_DB_ADDR
+              value: "{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
+            - name: MONGO_DB_URI
+              value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
