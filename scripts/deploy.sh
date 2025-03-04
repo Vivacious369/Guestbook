@@ -22,6 +22,8 @@ docker build -t $BACKEND_IMAGE ./src/backend
 echo "📤 Pushing images to local registry..."
 docker push $FRONTEND_IMAGE
 docker push $BACKEND_IMAGE
+docker push localhost:5000/the-mongo-image:latest
+
 
 
 # Apply Kubernetes Manifests to Deploy Services
