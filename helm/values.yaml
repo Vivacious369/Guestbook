@@ -78,9 +78,9 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
 
-monitoring:
+
   # Prometheus section with ServiceMonitor configuration
-  prometheus:
+prometheus:
     enabled: true
     alertmanager:
       enabled: true
