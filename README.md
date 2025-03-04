@@ -214,7 +214,6 @@ You can deploy the Guestbook application and set up monitoring using Helm charts
 
 ```bash
 helm install guestbook ./helm --values ./helm/values.yaml
-helm install monitoring ./helm --values ./helm/monitoring-values.yaml
 ```
 
 This will install the Guestbook application along with Prometheus, Grafana, and alerting configured as per the provided `values.yaml` files.
