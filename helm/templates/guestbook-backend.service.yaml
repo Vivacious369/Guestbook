@@ -10,14 +10,14 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.backend.metricsPort }}"
 spec:
-  type: {{ .Values.backend.serviceType }}
+  type: {{ .Values.backend.service.type }}
   selector:
     app: {{ .Values.appName }}
     tier: backend
   ports:
     - name: http-server
-      port: {{ .Values.backend.servicePort }}
-      targetPort: {{ .Values.backend.targetPort }}
+      port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.service.targetPort }}
     - name: metrics
       port: {{ .Values.backend.metricsPort }}
       targetPort: {{ .Values.backend.metricsPort }}
