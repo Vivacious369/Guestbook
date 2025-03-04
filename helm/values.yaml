@@ -97,7 +97,7 @@ monitoring:
         receivers:
           - name: "pagerduty"
             pagerduty_configs:
-              - service_key: "2439d0f35b834908c19743e7449959a5"  # Replace with your actual PagerDuty API key
+              - service_key: "{{ .Values.pagerduty.existingSecretKeyRef }}"  # Replace with your actual PagerDuty API key
                 severity: "critical"
                 send_resolved: true
         inhibit_rules:
