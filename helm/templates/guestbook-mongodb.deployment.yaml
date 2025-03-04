@@ -11,7 +11,7 @@ metadata:
     app: {{ .Values.appName }}
     tier: db
 spec:
-  replicas: {{ .Values.mongo.replicas }}
+  replicas: {{ .Values.mongo.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Values.appName }}
@@ -24,14 +24,14 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: "{{ .Values.mongo.image }}"
+          image: "{{ .Values.mongo.image.repository }}:{{ .Values.mongo.image.tag }}"
           ports:
           - name: http-server
-            containerPort: {{ .Values.mongo.port }}
+            containerPort: {{ .Values.mongo.service.port }}
           env:
           - name: PORT
-            value: "{{ .Values.mongo.port }}"
+            value: "{{ .Values.mongo.service.port }}"
           - name: GUESTBOOK_DB_ADDR
-            value: "{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
+            value: "{{ .Values.mongo.name }}:{{ .Values.mongo.service.port }}"
           - name: MONGO_DB_URI
-            value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
+            value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.service.port }}"
