@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: python-guestbook-mongodb
+  name: {{ .Values.mongo.name }}
   labels:
-    app: python-guestbook
+    app: {{ .Values.appName }}
     tier: db
     monitoring: "enabled"
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "9216"  # Update to new metrics port
+    prometheus.io/port: "{{ .Values.mongo.metricsPort }}"
 spec:
   ports:
     - name: http-server
-      port: 27017
-      targetPort: 27017
+      port: {{ .Values.mongo.service.port }}
+      targetPort: {{ .Values.mongo.service.port }}
     - name: metrics
-      port: 8000       # Port for exposing Prometheus metrics
-      targetPort: 8000
+      port: {{ .Values.mongo.metricsPort }}
+      targetPort: {{ .Values.mongo.metricsPort }}
   selector:
-    app: python-guestbook
+    app: {{ .Values.appName }}
     tier: db
