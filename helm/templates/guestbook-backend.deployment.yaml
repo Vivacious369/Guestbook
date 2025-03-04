@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    app: {{ .Values.appName }}
+    tier: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+        tier: backend
+    spec:
+      initContainers:
+        - name: init-db-ready
+          image: mongo:4
+          command: ['/bin/sh', '-c']
+          args:
+            - |
+              echo "Waiting for mongodb at {{ .Values.mongo.name }}:{{ .Values.mongo.port }} to go live before the BE..."
+            - |
+              until mongo --host {{ .Values.mongo.name }}:{{ .Values.mongo.port }} >/dev/null; do
+                echo "Waiting for connection for 2 sec."
+                sleep 2
+              done
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          ports:
+            - name: http-server
+              containerPort: {{ .Values.backend.service.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.backend.service.port }}"
+            - name: GUESTBOOK_DB_ADDR
+              value: "{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"
+            - name: MONGO_DB_URI
+              value: "mongodb://{{ .Values.mongo.username }}:{{ .Values.mongo.password }}@{{ .Values.mongo.name }}:{{ .Values.mongo.port }}"

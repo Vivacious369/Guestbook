@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    app: {{ .Values.appName }}
+    tier: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}  # Correct field name for replicaCount
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+        ports:
+        - name: http-server
+          containerPort: {{ .Values.frontend.service.port }}  # Use the correct port value from values.yaml
+        env:
+        - name: PORT
+          value: "{{ .Values.frontend.service.port }}"
+        - name: GUESTBOOK_API_ADDR
+          value: "{{ .Values.backend.serviceName }}:{{ .Values.backend.port }}"

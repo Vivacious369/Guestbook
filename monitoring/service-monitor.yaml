@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: python-guestbook-monitor
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: python-guestbook
+  endpoints:
+    # Frontend metrics (Flask app exposing metrics on port 8000)
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      targetPort: 8000
+    # Backend metrics (Updated to use correct backend metrics port)
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      targetPort: 8000
+    # MongoDB metrics (MongoDB exporter exposes metrics on port 8000)
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      targetPort: 8000
+  namespaceSelector:
+    any: true
