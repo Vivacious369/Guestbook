@@ -162,7 +162,10 @@ receivers:
 Apply the configuration:
 
 ```bash
-kubectl apply -f monitoring/alertmanager-config.yaml
+kubectl create secret generic alertmanager-kube-prometheus-stack-alertmanager -n monitoring \
+  --from-file=alertmanager.yaml=monitoring/alertmanager.yaml \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 ```
 
 ### Test Alerts
