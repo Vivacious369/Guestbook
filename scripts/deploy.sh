@@ -8,6 +8,11 @@ REGISTRY="localhost:5000"
 FRONTEND_IMAGE="$REGISTRY/guestbook-frontend:latest"
 BACKEND_IMAGE="$REGISTRY/guestbook-backend:latest"
 
+echo " Mongo Image"
+docker pull mongo:latest
+docker tag mongo:latest localhost:5000/the-mongo-image:latest
+
+
 # Build Docker images
 echo "🚀 Building Docker images..."
 docker build -t $FRONTEND_IMAGE ./src/frontend
@@ -17,6 +22,7 @@ docker build -t $BACKEND_IMAGE ./src/backend
 echo "📤 Pushing images to local registry..."
 docker push $FRONTEND_IMAGE
 docker push $BACKEND_IMAGE
+
 
 # Apply Kubernetes Manifests to Deploy Services
 echo "Deploying ervices to Kubernetes..."
