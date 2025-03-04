@@ -157,7 +157,7 @@ monitoring:
     namespaceSelector:
       any: true
 
-    monitoring:
+monitoring:
   prometheus:
     enabled: true
     namespace: monitoring  # Ensuring Prometheus is deployed in the monitoring namespace
