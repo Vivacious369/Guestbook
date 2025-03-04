@@ -8,7 +8,7 @@ metadata:
     monitoring: "enabled"
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "9216"  # Update to new metrics port
+    prometheus.io/port: "8000"  # Update to new metrics port
 spec:
   ports:
     - name: http-server
