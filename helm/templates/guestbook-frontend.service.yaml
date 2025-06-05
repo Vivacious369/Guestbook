@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    app: {{ .Values.appName }}
+    tier: frontend
+    monitoring: "enabled"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.frontend.metricsPort }}"
+spec:
+  type: {{ .Values.frontend.service.type }}
+  selector:
+    app: {{ .Values.appName }}
+    tier: frontend
+  ports:
+    - name: http
+      port: {{ .Values.frontend.service.port }}        # Use the correct reference
+      targetPort: {{ .Values.frontend.service.targetPort }}  # Use the correct reference
+    - name: metrics
+      port: {{ .Values.frontend.metricsPort }}   # Use the correct reference
+      targetPort: {{ .Values.frontend.metricsPort }}  # Use the correct reference

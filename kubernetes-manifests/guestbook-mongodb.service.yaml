@@ -1,23 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: python-guestbook-backend
+  name: python-guestbook-mongodb
   labels:
     app: python-guestbook
-    tier: backend
+    tier: db
     monitoring: "enabled"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8000"  # Update to new metrics port
 spec:
-  type: ClusterIP
-  selector:
-    app: python-guestbook
-    tier: backend
   ports:
     - name: http-server
-      port: 8080       # Port for backend API
-      targetPort: 8080 # Target port for backend API
+      port: 27017
+      targetPort: 27017
     - name: metrics
       port: 8000       # Port for exposing Prometheus metrics
-      targetPort: 8000 # Target port for Prometheus metrics
+      targetPort: 8000
+  selector:
+    app: python-guestbook
+    tier: db

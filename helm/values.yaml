@@ -1,0 +1,236 @@
+# Global values
+appName: python-guestbook
+
+# Frontend values
+frontend:
+  name: python-guestbook-frontend
+  image:
+    repository: "localhost:5000/the-frontend-image"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  metricsPort: 8000
+  replicaCount: 1
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+# Backend values
+backend:
+  name: python-guestbook-backend
+  image:
+    repository: "localhost:5000/the-backend-image"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  metricsPort: 8000
+  replicaCount: 1
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 75
+
+# MongoDB values
+mongo:
+  name: python-guestbook-mongodb
+  image:
+    repository: "localhost:5000/the-mongo-image"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+  metricsPort: 9216
+  username: root
+  password: example
+  replicaCount: 1
+
+# Ingress values
+ingress:
+  enabled: false
+  host: localhost
+  path: /
+
+# ServiceAccount values
+serviceAccount:
+  create: true
+  name: "guestbook-service-account"
+  annotations: {}
+  automount: true
+
+# HPA values
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+
+  # Prometheus section with ServiceMonitor configuration
+prometheus:
+    enabled: true
+    alertmanager:
+      enabled: true
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: "pagerduty"  # Set PagerDuty as the default receiver
+          group_by:
+            - namespace
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 12h
+        receivers:
+          - name: "pagerduty"
+            pagerduty_configs:
+              - service_key: "{{ .Values.pagerduty.existingSecretKeyRef }}"  # Replace with your actual PagerDuty API key
+                severity: "critical"
+                send_resolved: true
+        inhibit_rules:
+          - source_match:
+              severity: "critical"
+            target_match:
+              severity: "warning"
+            equal: ["alertname", "namespace", "instance"]
+
+          - source_match:
+              severity: "warning"
+            target_match:
+              severity: "info"
+            equal: ["alertname", "namespace"]
+
+          - source_match:
+              alertname: "InfoInhibitor"
+            target_match:
+              severity: "info"
+            equal: ["namespace"]
+
+          - target_match:
+              alertname: "InfoInhibitor"
+
+      # If you have any template files for Alertmanager, you can specify them as well
+      templates:
+        - /etc/alertmanager/config/*.tmpl
+
+    server:
+      persistentVolume:
+        enabled: true
+        size: 8Gi
+    grafana:
+      enabled: true
+      adminPassword: "yourpassword" # Set your Grafana password
+    namespace: monitoring  # Specify the namespace for Prometheus
+
+    ## Service monitor 
+    serviceMonitor:
+    enabled: true
+    selector:
+      matchLabels:
+        app: python-guestbook
+    endpoints:
+      - port: metrics
+        interval: 30s
+        path: /metrics
+        targetPort: 8000
+      - port: metrics
+        interval: 30s
+        path: /metrics
+        targetPort: 8000
+      - port: metrics
+        interval: 30s
+        path: /metrics
+        targetPort: 8000
+    namespaceSelector:
+      any: true
+
+monitoring:
+  prometheus:
+    enabled: true
+    namespace: monitoring  # Ensuring Prometheus is deployed in the monitoring namespace
+
+    alertmanager:
+      enabled: true
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: "pagerduty"
+          group_by: ["namespace"]
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 12h
+        receivers:
+          - name: "pagerduty"
+            pagerduty_configs:
+              - service_key: "2439d0f35b834908c19743e7449959a5"  # Replace with actual key
+                severity: "critical"
+                send_resolved: true
+        inhibit_rules:
+          - source_match:
+              severity: "critical"
+            target_match:
+              severity: "warning"
+            equal: ["alertname", "namespace", "instance"]
+          - source_match:
+              severity: "warning"
+            target_match:
+              severity: "info"
+            equal: ["alertname", "namespace"]
+
+    server:
+      persistentVolume:
+        enabled: true
+        size: 8Gi
+
+    grafana:
+      enabled: true
+      adminPassword: "yourpassword"
+
+    serviceMonitor:
+      enabled: true
+      selector:
+        matchLabels:
+          app: python-guestbook
+      endpoints:
+        - port: metrics
+          interval: 30s
+          path: /metrics
+          targetPort: 8000
+      namespaceSelector:
+        any: true
+
+    # **Adding Rules for Alerts**
+    additionalPrometheusRules:
+      enabled: true
+      rules:
+        - alert: HighCPUUsage
+          expr: avg(rate(container_cpu_usage_seconds_total[5m])) > 0.8
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage detected"
+            description: "Container CPU usage is above 80% for 2 minutes."
+
+        - alert: HighMemoryUsage
+          expr: avg(container_memory_usage_bytes) > 500000000
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High Memory Usage"
+            description: "Memory usage exceeded 500MB for 5 minutes."
